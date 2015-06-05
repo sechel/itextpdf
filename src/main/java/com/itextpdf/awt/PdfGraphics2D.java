@@ -88,6 +88,7 @@ import java.awt.image.RenderedImage;
 import java.awt.image.WritableRaster;
 import java.awt.image.renderable.RenderableImage;
 import java.io.ByteArrayOutputStream;
+import java.lang.reflect.Method;
 import java.text.AttributedCharacterIterator;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -1731,6 +1732,14 @@ public class PdfGraphics2D extends Graphics2D {
                 com.itextpdf.text.Image image = com.itextpdf.text.Image.getInstance(img, null);
                 PdfPatternPainter pattern = cb.createPattern(image.getWidth(), image.getHeight());
                 AffineTransform inverse = this.normalizeMatrix();
+                try {
+	                Method getTextureTransformMethod = tp.getClass().getMethod("getTextureTransform");
+	                AffineTransform T = (AffineTransform)getTextureTransformMethod.invoke(tp);
+	                T.invert();
+	                inverse.concatenate(T);
+                } catch (Exception e) {
+                	System.err.println(e);
+                }                
                 inverse.translate(rect.getX(), rect.getY());
                 inverse.scale(rect.getWidth() / image.getWidth(), -rect.getHeight() / image.getHeight());
                 double[] mx = new double[6];
